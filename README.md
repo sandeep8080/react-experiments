@@ -1,54 +1,46 @@
-# React + TypeScript + Vite
+# React Experiments
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repository is basically a playground to experiments and test out the myths and concepts of React. 
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Resetting React State When Props Change
 
-## Expanding the ESLint configuration
+In React, a component's internal state typically persists across prop changes. This can lead to scenarios where, for example, a child component retains its state even when its parent passes new props. 
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+A common pattern to reset a component's state when its props change is to use the `key` prop. When the `key` changes, React will unmount and remount the component, thereby resetting its internal state.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### Example Use Case
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Suppose you have a parent component that renders a child component based on a selected value (e.g., a user ID from a dropdown). If the child component manages its own state (such as a user's name), switching between users via the dropdown will not reset the child's state by default. See below example:
+
 
 ```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+export const ResetStateExample = () => {
+  // This component is used to demonstrate the reset state functionality
+  const [userId, setUserId] = useState("");
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+  const handleDropdownChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUserId(event.target.value);
+  };
+  return (
+    <>
+      <Dropdown handleDropdownChange={handleDropdownChange} />
+      <UserInfoComponent userId={userId} />
+    </>
+  );
+};
 ```
+
+By passing a unique `key` (such as the `userId`) to the child component, you instruct React to treat each user as a separate instance. This ensures that the child component's state is reset whenever the `userId` changes.
+
+
+
+### Key Takeaways
+
+- **State Persistence:** React components retain their internal state across prop changes by default.
+- **Resetting State:** Passing a unique `key` prop (e.g., `key={userId}`) to a component will force React to unmount and remount it, resetting its state.
+- **Practical Benefit:** This pattern is useful when you want to ensure that a component's state does not persist across different prop values, such as when displaying user-specific information.
+
+### References
+
+- [React Documentation](https://react.dev/learn/you-might-not-need-an-effect#resetting-all-state-when-a-prop-changes)
